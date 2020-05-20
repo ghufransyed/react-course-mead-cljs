@@ -11,8 +11,3 @@
 
 (defn ^:export run []
   (rdom/render [simple-component] (js/document.getElementById "app")))
-
-
-(defn main []
-  (.log js/console "running main!")
-  (run))

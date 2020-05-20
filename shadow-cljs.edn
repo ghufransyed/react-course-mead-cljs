@@ -1,8 +1,9 @@
 ;; shadow-cljs configuration
 {:source-paths ["src"]
  :dev-http {8000 "public"}
+ :nrepl {:port 55555}
  :dependencies			[[reagent "1.0.0-alpha2"]]
 :builds {:app { :target		    :browser
                 :output-dir	  "public/scripts/"
                 :modules	    {:core
-                                  {:init-fn com.myname.core/main }}}}}
+                                  {:init-fn com.ghufran.core/run }}}}}

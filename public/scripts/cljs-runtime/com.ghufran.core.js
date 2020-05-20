@@ -9,10 +9,5 @@ com.ghufran.core.run = (function com$ghufran$core$run(){
 return reagent.dom.render.cljs$core$IFn$_invoke$arity$2(new cljs.core.PersistentVector(null, 1, 5, cljs.core.PersistentVector.EMPTY_NODE, [com.ghufran.core.simple_component], null),document.getElementById("app"));
 });
 goog.exportSymbol('com.ghufran.core.run', com.ghufran.core.run);
-com.ghufran.core.main = (function com$ghufran$core$main(){
-console.log("running main!");
-
-return com.ghufran.core.run();
-});
 
 //# sourceMappingURL=com.ghufran.core.js.map
