@@ -1,7 +1,8 @@
 ;; shadow-cljs configuration
-{:source-paths ["src"]                                      ;;these will be ignored in favor of deps.edn path
- :dev-http {8081 "public"}
- :deps          true
- :builds {:app { :target		:browser
-                :output-dir	"public/scripts/"
-                :modules	{:core {:init-fn com.ghufran.core/main}}}}}
+{:source-paths ["src"]
+ :dev-http {8000 "public"}
+ :dependencies			[[reagent "1.0.0-alpha2"]]
+:builds {:app { :target		    :browser
+                :output-dir	  "public/scripts/"
+                :modules	    {:core
+                                  {:init-fn com.myname.core/main }}}}}
