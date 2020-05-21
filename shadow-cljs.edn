@@ -3,7 +3,8 @@
  :dev-http {8081 "public"}
  :nrepl {:port 55555}
  :dependencies			[[reagent "1.0.0-alpha2"]]
-:builds {:app { :target		    :browser
+ :builds {:app { :target		    :browser
                 :output-dir	  "public/scripts/"
+                :asset-path   "/scripts/"
                 :modules	    {:core
                                   {:init-fn com.ghufran.core/run }}}}}

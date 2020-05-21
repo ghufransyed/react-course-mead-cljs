@@ -45,5 +45,8 @@
        [options]
        [add-option]])
 
-(defn ^:export run []
-  (rdom/render [indecision-app] (js/document.getElementById "app")))
+
+(defn ^:export ^:dev/after-load run []
+  (rdom/render [indecision-app] (js/document.getElementById "app"))
+  (js/console.log "'run' called"))
+
