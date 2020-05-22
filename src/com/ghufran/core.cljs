@@ -2,47 +2,63 @@
   (:require [reagent.core :as r]
             [reagent.dom :as rdom]))
 
-#_(defn simple-component []
-  [:div
-   [:p "I am a component"]
-   [:p.someclass
-    "I have " [:strong "bold"]
-    [:span {:style {:color "red"}} " and red "] "text."]])
+(def title "Indecision")
+(def subtitle "Put your life in the hands of a computer")
+(def option_list
+  (map (fn [x] [x (random-uuid) ]) ["Thing One" "Thing One" "Thing Three"]))
 
+option_list
 
-
-
-(defn header []
+(defn header [title, subtitle]
       [:div
-       [:h1 "Indecision"]
-       [:h2 "Put your life in the hands of a computer"]])
+       [:h1 title]
+       [:h2 subtitle]])
 
 
 (defn action []
       [:div
        [:button "What should I do?"]])
 
-(defn option []
+(defn option [option_text]
       [:div
-       [:p "This is the option component"]])
+       [:p option_text]])
 
 
-(defn options []
+(defn handle_remove_all []
+  (js/console.log "handle_remove_all called"))
+
+
+(defn options [option_list]
       [:div
        [:p "This is the options component"]
-       [option]])
+       (for [[val uuid] option_list
+             :let [key (str uuid)]]
+         ^{:key key} [:option val])
+       [:button {:on-click handle_remove_all} "Remove All"]])
+
+
+(map meta (options option_list))
+
+
+(defn handle_add_option [e]
+  (js/e.preventDefault)
+  (js/console.log e.target.elements.add_option_text.value))
 
 
 (defn add-option []
       [:div
-       [:p "This is the add-option component"]])
+       [:p "This is the add-option component"]
+       [:form {:on-submit handle_add_option}
+        [:input {:placeholder "Enter option text here"
+                 :name     :add_option_text}]
+        [:button {:type :submit} "Add Option"]]])
 
 
 (defn indecision-app []
       [:div
-       [header]
+       [header title subtitle]
        [action]
-       [options]
+       [options option_list]
        [add-option]])
 
 
