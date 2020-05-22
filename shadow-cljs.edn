@@ -7,4 +7,9 @@
                 :output-dir	  "public/scripts/"
                 :asset-path   "/scripts/"
                 :modules	    {:core
-                                  {:init-fn com.ghufran.core/run }}}}}
+                                  {:init-fn com.ghufran.core/run }}}
+          :counter { :target		    :browser
+                    :output-dir	  "public/scripts/"
+                    :asset-path   "/scripts/"
+                    :modules	    {:counter
+                                   {:init-fn com.ghufran.playground.counter/run }}}}}
