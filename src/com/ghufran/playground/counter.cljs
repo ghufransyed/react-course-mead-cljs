@@ -12,6 +12,8 @@
     [:button "Reset"]]])
 
 
-(defn ^:export run []
+
+(defn ^:export ^:dev/after-load run []
+  (rdom/render [counter] (js/document.getElementById "app"))
   (js/console.log "counter app running"))
 
