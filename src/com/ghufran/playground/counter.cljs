@@ -4,12 +4,24 @@
 
 
 
+
+
+(defn handle_add_one [e]
+  (js/console.log "handle_add_one"))
+
+(defn handle_minus_one [e]
+  (js/console.log "handle_minus_one"))
+
+(defn handle_reset [e]
+  (js/console.log "handle_reset"))
+
+
 (defn counter []
   [:div [:h1 "Count:"  ]
    [:span
-    [:button "+1"]
-    [:button "-1"]
-    [:button "Reset"]]])
+    [:button {:on-click handle_add_one} "+1"]
+    [:button {:on-click handle_minus_one}"-1"]
+    [:button {:on-click handle_reset}"Reset"]]])
 
 
 
