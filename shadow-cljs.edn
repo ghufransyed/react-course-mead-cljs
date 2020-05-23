@@ -12,4 +12,9 @@
                     :output-dir	  "public/scripts/"
                     :asset-path   "/scripts/"
                     :modules	    {:counter
-                                   {:init-fn com.ghufran.playground.counter/run }}}}}
+                                   {:init-fn com.ghufran.playground.counter/run }}}
+          :visible { :target		    :browser
+                     :output-dir	  "public/scripts/"
+                     :asset-path   "/scripts/"
+                     :modules	    {:counter
+                          {:init-fn com.ghufran.playground.visible/run }}} }}
