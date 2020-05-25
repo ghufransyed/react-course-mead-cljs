@@ -2,10 +2,6 @@
   (:require [reagent.core :as r]
             [reagent.dom :as rdom]))
 
-(defn ^:export ^:dev/after-load run []
-  (js/console.log "visible is running!!!"))
-
-
 
 (defn visible []
   (let [visible (r/atom false)]
@@ -20,4 +16,7 @@
              "Here are some details")]])))
 
 
-(rdom/render [visible] (js/document.getElementById "app"))
+#_(defn ^:export ^:dev/after-load run []
+  (js/console.log "visible is running!!!")
+  (rdom/render [visible] (js/document.getElementById "app")))
+
