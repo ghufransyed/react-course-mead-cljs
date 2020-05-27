@@ -2,8 +2,7 @@
 {:source-paths ["src"]
  :dev-http     {8081 "public"}
  :nrepl        {:port 55555}
- :dependencies [[thheller/shadow-cljsjs "0.0.21"]
-                [reagent "1.0.0-alpha2"]
+ :dependencies [[reagent "1.0.0-alpha2"]
                 [devcards "0.2.6"]]
 
  :builds       {:app      {:target     :browser
