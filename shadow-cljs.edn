@@ -2,14 +2,16 @@
 {:source-paths ["src"]
  :dev-http     {8081 "public"}
  :nrepl        {:port 55555}
- :dependencies [[reagent "1.0.0-alpha2"]
+ :dependencies [[binaryage/devtools "1.0.2"]
+                [reagent "1.0.0-alpha2"]
                 [devcards "0.2.6"]]
 
  :builds       {:app      {:target     :browser
                            :output-dir "public/scripts/"
                            :asset-path "/scripts/"
                            :modules    {:core
-                                        {:init-fn com.ghufran.core/run}}}
+                                        {:init-fn com.ghufran.core/run}}
+                           :devtools {:preloads [shadow.remote.runtime.cljs.browser]}}
 
                 :devcards {:target           :browser
                            :output-dir       "public/scripts/"
