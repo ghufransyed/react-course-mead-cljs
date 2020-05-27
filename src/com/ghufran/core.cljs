@@ -77,9 +77,6 @@
 (def option_map
   (into {} (map (fn [x] [x (random-uuid)]) ["Thing One" "Thing Two" "Thing Three"])))
 
-(tap> :hello)
-(tap> option_map)
-
 
 (defn indecision-app []
   (let [option_state (r/atom option_map)]
