@@ -24,9 +24,14 @@
         {:on-click #(pick_option option_state)}
         "What should I do?"]])
 
-(defn option [option_text]
-      [:div
-       [:p option_text]])
+
+(defn option [{:keys [option_text option_state]}]
+  [:div
+   [:span
+    option_text
+    [:button {:on-click
+              #(swap! option_state dissoc option_text)}
+     "Remove"]]])
 
 
 (defn handle_remove_all [option_state]
@@ -37,7 +42,9 @@
       [:div
        (for [[val uuid] @option_state
              :let [key (str uuid)]]
-         ^{:key key} [:option val])
+        ^{:key key}
+          [option {:option_text val
+                   :option_state option_state}])
        [:button {:on-click
                  #(handle_remove_all option_state)}
         "Remove All"]])
