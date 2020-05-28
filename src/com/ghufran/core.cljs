@@ -2,14 +2,20 @@
   (:require [reagent.core :as r]
             [reagent.dom :as rdom]))
 
-(def title "Indecision")
-(def subtitle "Put your life in the hands of a computer")
 
-
-(defn header [title, subtitle]
+#_(defn header [{:keys [title subtitle]}]
       [:div
        [:h1 title]
        [:h2 subtitle]])
+
+(defn header
+  ([] (header {:title "Indecision"}))
+  ([{:keys [title subtitle]
+     :or   {title "Indecision"}}]
+
+    [:div
+     [:h1 title]
+     [:h2 subtitle]]))
 
 
 (defn pick_option [option_state ]
@@ -82,7 +88,8 @@
   (let [option_state (r/atom option_map)]
     (fn []
       [:div
-       [header title subtitle]
+       [header {:subtitle
+                "Put your life in the hands of a computer"}]
        [action option_state]
        [options option_state]
        [add-option option_state]])))
