@@ -3,11 +3,6 @@
             [reagent.dom :as rdom]))
 
 
-#_(defn header [{:keys [title subtitle]}]
-      [:div
-       [:h1 title]
-       [:h2 subtitle]])
-
 (defn header
   ([] (header {:title "Indecision"}))
   ([{:keys [title subtitle]
@@ -49,18 +44,18 @@
 
 
 
-(defn handle_add_option [event, err, option_state]
+(defn handle_add_option [{:keys [event error option_state]}]
   (js/event.preventDefault)
   (def new_option event.target.elements.add_option_text.value)
   (set! event.target.elements.add_option_text.value "")
   (cond
       (= new_option "")
-        (reset! err "That is not a valid entry")
+        (reset! error "That is not a valid entry")
       (contains? @option_state new_option)
-        (do (reset! err (str new_option
+        (do (reset! error (str new_option
                              ": That item already exists")))
       :else
-        (do (reset! err false)
+        (do (reset! error false)
             (swap! option_state assoc new_option (random-uuid)))))
 
 
@@ -71,10 +66,11 @@
       [:div
        (if @error
          [:p @error])
-       [:form {:on-submit (fn [e]
-                            (handle_add_option e
-                                               error
-                                               option_state))}
+       [:form {:on-submit
+               (fn [e]
+                 (handle_add_option {:event e
+                                     :error error
+                                     :option_state option_state}))}
         [:input {:placeholder "Enter option text here"
                  :name        :add_option_text}]
         [:button {:type :submit} "Add Option"]]])))
