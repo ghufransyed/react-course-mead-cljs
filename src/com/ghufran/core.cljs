@@ -21,7 +21,8 @@
 (defn action [option_state]
       [:div
        [:button
-        {:on-click #(pick_option option_state)}
+        {:on-click #(pick_option option_state)
+         :disabled (empty? @option_state)}
         "What should I do?"]])
 
 
@@ -46,7 +47,8 @@
           [option {:option_text val
                    :option_state option_state}])
        [:button {:on-click
-                 #(handle_remove_all option_state)}
+                           #(handle_remove_all option_state)
+                 :disabled (empty? @option_state)}
         "Remove All"]])
 
 
