@@ -29,19 +29,18 @@
        [:p option_text]])
 
 
-(defn handle_remove_all []
-  (js/console.log "handle_remove_all called"))
+(defn handle_remove_all [option_state]
+  (reset! option_state {}))
 
 
 (defn options [option_state]
       [:div
-       [:p "This is the options component"]
        (for [[val uuid] @option_state
              :let [key (str uuid)]]
          ^{:key key} [:option val])
-       [:button {:on-click handle_remove_all} "Remove All"]])
-
-
+       [:button {:on-click
+                 #(handle_remove_all option_state)}
+        "Remove All"]])
 
 
 (defn handle_add_option [{:keys [event error option_state]}]
@@ -52,12 +51,11 @@
       (= new_option "")
         (reset! error "That is not a valid entry")
       (contains? @option_state new_option)
-        (do (reset! error (str new_option
-                             ": That item already exists")))
+        (reset! error (str new_option
+                         ": That item already exists"))
       :else
         (do (reset! error false)
             (swap! option_state assoc new_option (random-uuid)))))
-
 
 
 (defn add-option [option_state]
