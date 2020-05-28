@@ -83,19 +83,22 @@
         [:button {:type :submit} "Add Option"]]])))
 
 
-(def option_map
+(def test_map
   (into {} (map (fn [x] [x (random-uuid)]) ["Thing One" "Thing Two" "Thing Three"])))
 
 
-(defn indecision-app []
-  (let [option_state (r/atom option_map)]
-    (fn []
-      [:div
-       [header {:subtitle
-                "Put your life in the hands of a computer"}]
-       [action option_state]
-       [options option_state]
-       [add-option option_state]])))
+(defn indecision-app
+  ([]
+   (indecision-app {}))
+  ([option_map]
+   (let [option_state (r/atom option_map)]
+     (fn []
+       [:div
+        [header {:subtitle
+                 "Put your life in the hands of a computer"}]
+        [action option_state]
+        [options option_state]
+        [add-option option_state]]))))
 
 
 (defn ^:export ^:dev/after-load run []
