@@ -7,10 +7,9 @@
   ([] (header {:title "Indecision"}))
   ([{:keys [title subtitle]
      :or   {title "Indecision"}}]
-
-    [:div
-     [:h1 title]
-     [:h2 subtitle]]))
+   [:div
+    [:h1 title]
+    [:h2 subtitle]]))
 
 
 (defn pick_option [option_state ]
@@ -22,12 +21,13 @@
       [:div
        [:button
         {:on-click #(pick_option option_state)
-         :disabled (empty? @option_state)}
+         :disabled (empty? @option_state)
+         :id 'what-do'}
         "What should I do?"]])
 
 
-(defn option [{:keys [option_text option_state]}]
-  [:div
+(defn option [{:keys [option_text option_state id]}]
+  [:div {:id (str 'option-' id)}
    [:span
     option_text
     [:button {:on-click
@@ -41,10 +41,11 @@
 
 (defn options [option_state]
       [:div
-       (for [[val uuid] @option_state
+       (for [[val uuid id] (map conj  @option_state (range))
              :let [key (str uuid)]]
         ^{:key key}
-          [option {:option_text val
+          [option {:id id
+                   :option_text val
                    :option_state option_state}])
        [:button {:on-click
                            #(handle_remove_all option_state)
@@ -86,12 +87,21 @@
 (def test_map
   (into {} (map (fn [x] [x (random-uuid)]) ["Thing One" "Thing Two" "Thing Three"])))
 
+test_map
+
+(map conj  (map (fn [[k v]] [k v]) test_map) (range 10) )
+
+
+
 
 (defn indecision-app
   ([]
    (indecision-app {}))
-  ([option_map]
-   (let [option_state (r/atom option_map)]
+  ([option_seq]
+   (let [option_map (into {}
+                          (map (fn [x] [x (random-uuid)])
+                               option_seq))
+         option_state (r/atom option_map)]
      (fn []
        [:div
         [header {:subtitle
