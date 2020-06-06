@@ -22,15 +22,17 @@
        [:button
         {:on-click #(pick_option option_state)
          :disabled (empty? @option_state)
-         :id 'what-do'}
+         :id "what-do"}
         "What should I do?"]])
 
 
 (defn option [{:keys [option_text option_state id]}]
-  [:div {:id (str 'option-' id)}
+  [:div {:id (str "option-" id)}
    [:span
     option_text
-    [:button {:on-click
+    [:button {
+              :id (str "btn-" id)
+              :on-click
               #(swap! option_state dissoc option_text)}
      "Remove"]]])
 
@@ -41,31 +43,40 @@
 
 (defn options [option_state]
       [:div
+       [:button {:id "remove-all"
+                 :on-click
+                     #(handle_remove_all option_state)
+                 :disabled (empty? @option_state)}
+        "Remove All"]
        (for [[val uuid id] (map conj  @option_state (range))
              :let [key (str uuid)]]
         ^{:key key}
           [option {:id id
                    :option_text val
                    :option_state option_state}])
-       [:button {:on-click
-                           #(handle_remove_all option_state)
-                 :disabled (empty? @option_state)}
-        "Remove All"]])
+
+       (if (= (count @option_state) 0)
+         [:p {:id "get-started-msg"}
+          "Please add an option to get started!"])
+       ])
 
 
 (defn handle_add_option [{:keys [event error option_state]}]
   (js/event.preventDefault)
-  (def new_option event.target.elements.add_option_text.value)
-  (set! event.target.elements.add_option_text.value "")
-  (cond
+  (let [new_option event.target.elements.add_option_text.value]
+    (cond
       (= new_option "")
-        (reset! error "That is not a valid entry")
+        (reset! error "Sorry, that is not a valid entry")
       (contains? @option_state new_option)
-        (reset! error (str new_option
-                         ": That item already exists"))
+      (do
+          (set! event.target.elements.add_option_text.value new_option)
+          (reset! error (str "This item already exists")))
+
       :else
-        (do (reset! error false)
-            (swap! option_state assoc new_option (random-uuid)))))
+        (do
+          (set! event.target.elements.add-option-text.value "")
+          (reset! error false)
+          (swap! option_state assoc new_option (random-uuid))))))
 
 
 (defn add-option [option_state]
@@ -73,25 +84,23 @@
     (fn []
       [:div
        (if @error
-         [:p @error])
-       [:form {:on-submit
+         [:p  {:id "error-msg-addOption"} @error])
+       [:form {:id "form-addOption"
+               :on-submit
                (fn [e]
                  (handle_add_option {:event e
                                      :error error
                                      :option_state option_state}))}
-        [:input {:placeholder "Enter option text here"
+        [:input {:id "input-addOption"
+                 :placeholder "Enter option text here"
                  :name        :add_option_text}]
-        [:button {:type :submit} "Add Option"]]])))
+        [:button {:type :submit
+                  :id "button-addOption"}
+         "Add Option"]]])))
 
 
-(def test_map
+#_(def test_map
   (into {} (map (fn [x] [x (random-uuid)]) ["Thing One" "Thing Two" "Thing Three"])))
-
-test_map
-
-(map conj  (map (fn [[k v]] [k v]) test_map) (range 10) )
-
-
 
 
 (defn indecision-app
