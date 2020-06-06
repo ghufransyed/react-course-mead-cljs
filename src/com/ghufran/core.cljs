@@ -27,11 +27,13 @@
 
 
 (defn option [{:keys [option_text option_state id]}]
-  [:div {:id (str "option-" id)}
+  [:div {:id (str "option-" id)
+         :class "option" }
    [:span
     option_text
     [:button {
               :id (str "btn-" id)
+              :class "option-remove-btn"
               :on-click
               #(swap! option_state dissoc option_text)}
      "Remove"]]])
@@ -84,8 +86,6 @@
           (set! (.-value (js/document.getElementById "input-addOption")) "")
           )))))
 
-(def test_add_option_state (atom {:error      false
-                                  :form_value ""}))
 
 
 (defn add-option [option_state]
