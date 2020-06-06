@@ -93,7 +93,7 @@
                                   :error false
                                   :form_value ""
                                   })]
-    (fn []
+    (fn [option_state]
       (let [error (:error @add_option_state)]
         (do (tap> @add_option_state)
             [:div
@@ -113,6 +113,7 @@
                                      (fn [e]
                                        (swap! add_option_state assoc
                                               :form_value e.target.value))
+                       :defaultValue (:form_value @add_option_state)
                        }]
               [:button {:type :submit
                         :id   "button-addOption"}
