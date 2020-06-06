@@ -61,42 +61,62 @@
        ])
 
 
-(defn handle_add_option [{:keys [event error option_state]}]
-  (js/event.preventDefault)
-  (let [new_option event.target.elements.add_option_text.value]
-    (cond
-      (= new_option "")
-        (reset! error "Sorry, that is not a valid entry")
-      (contains? @option_state new_option)
-      (do
-          (set! event.target.elements.add_option_text.value new_option)
-          (reset! error (str "This item already exists")))
-
-      :else
+(defn handle_add_option [{:keys [event option_state add_option_state]}]
+  (do
+    (js/event.preventDefault)
+    (let [new_option (:form_value @add_option_state)]
+      (cond
+        (= new_option "")
         (do
-          (set! event.target.elements.add-option-text.value "")
-          (reset! error false)
-          (swap! option_state assoc new_option (random-uuid))))))
+          (js/console.log "empty string branch")
+          (swap! add_option_state merge {:error "Sorry, that is not a valid entry"}))
+        (contains? @option_state new_option)
+        (do
+          (js/console.log "duplicate string branch")
+          (swap! add_option_state merge {:error (str "This item already exists")}))
+
+        :else
+        (do
+          (js/console.log "actual new option branch")
+          (swap! add_option_state merge {:form_value ""
+                                         :error      false})
+          (swap! option_state assoc new_option (random-uuid))
+          (set! (.-value (js/document.getElementById "input-addOption")) "")
+          )))))
+
+(def test_add_option_state (atom {:error      false
+                                  :form_value ""}))
 
 
 (defn add-option [option_state]
-  (let [error (r/atom false)]
+  (let [add_option_state (r/atom {
+                                  :error false
+                                  :form_value ""
+                                  })]
     (fn []
-      [:div
-       (if @error
-         [:p  {:id "error-msg-addOption"} @error])
-       [:form {:id "form-addOption"
-               :on-submit
-               (fn [e]
-                 (handle_add_option {:event e
-                                     :error error
-                                     :option_state option_state}))}
-        [:input {:id "input-addOption"
-                 :placeholder "Enter option text here"
-                 :name        :add_option_text}]
-        [:button {:type :submit
-                  :id "button-addOption"}
-         "Add Option"]]])))
+      (let [error (:error @add_option_state)]
+        (do (tap> @add_option_state)
+            [:div
+             (if error
+               [:p {:id "error-msg-addOption"} error])
+             (tap> @add_option_state)
+             [:form {:id "form-addOption"
+                     :on-submit
+                         (fn [e]
+                           (handle_add_option {:event            e
+                                               :add_option_state add_option_state
+                                               :option_state     option_state}))}
+              [:input {:id           "input-addOption"
+                       :placeholder  "Enter option text here"
+                       :name         :add_option_text
+                       :on-change
+                                     (fn [e]
+                                       (swap! add_option_state assoc
+                                              :form_value e.target.value))
+                       }]
+              [:button {:type :submit
+                        :id   "button-addOption"}
+               "Add Option"]]])))))
 
 
 #_(def test_map
