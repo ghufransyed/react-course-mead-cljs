@@ -1,9 +1,10 @@
 {
   "dependencies": {
+    "create-react-class": "^15.6.3",
+    "marked": "^1.1.0",
     "react": "16.13.0",
     "react-dom": "16.13.0",
-    "shadow-cljs": "^2.9.8",
-    "create-react-class": "^15.6.3",
-    "marked": "^1.1.0"
+    "react-modal": "^3.11.2",
+    "shadow-cljs": "^2.9.8"
   }
 }
