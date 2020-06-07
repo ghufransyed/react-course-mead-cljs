@@ -1,6 +1,7 @@
 (ns com.ghufran.core
   (:require [reagent.core :as r]
-            [reagent.dom :as rdom]))
+            [reagent.dom :as rdom]
+            ["react-modal" :default modal]))
 
 
 (defn header
@@ -12,17 +13,17 @@
     [:h2 subtitle]]))
 
 
-(defn pick_option [option_state ]
-  (let [picked_option (rand-nth (keys @option_state))]
+(defn pick_option [app_db]
+  (let [picked_option (rand-nth (keys (:options @app_db)))]
     (js/console.log picked_option)))
 
 
-(defn action [option_state]
+(defn action [app_db]
       [:div
        [:button
-        {:on-click #(pick_option option_state)
-         :disabled (empty? @option_state)
-         :id "what-do"}
+        {:on-click #(pick_option app_db)
+         :disabled (empty? (:options @app_db))
+         :id       "what-do"}
         "What should I do?"]])
 
 
@@ -39,89 +40,99 @@
      "Remove"]]])
 
 
-(defn handle_remove_all [option_state]
-  (reset! option_state {}))
+(defn handle_remove_all [app_db]
+  (swap! app_db merge {:options []}))
 
 
-(defn options [option_state]
+(defn options [app_db]
       [:div
        [:button {:id "remove-all"
                  :on-click
-                     #(handle_remove_all option_state)
-                 :disabled (empty? @option_state)}
+                     #(handle_remove_all app_db)
+                 :disabled (empty? (:options @app_db))}
         "Remove All"]
-       (for [[val uuid id] (map conj  @option_state (range))
+       (for [[val uuid id] (map conj (:options @app_db) (range))
              :let [key (str uuid)]]
         ^{:key key}
           [option {:id id
                    :option_text val
-                   :option_state option_state}])
+                   :option_state app_db}])
 
-       (if (= (count @option_state) 0)
+       (if (= (count (:options @app_db)) 0)
          [:p {:id "get-started-msg"}
           "Please add an option to get started!"])
        ])
 
 
-(defn handle_add_option [{:keys [event option_state add_option_state]}]
+(defn handle_add_option [{:keys [event app_db add_option_state]}]
   (do
     (js/event.preventDefault)
     (let [new_option (:form_value @add_option_state)]
       (cond
         (= new_option "")
         (do
-          (js/console.log "empty string branch")
           (swap! add_option_state merge {:error "Sorry, that is not a valid entry"}))
-        (contains? @option_state new_option)
-        (do
-          (js/console.log "duplicate string branch")
-          (swap! add_option_state merge {:error (str "This item already exists")}))
+        (contains? (:options @app_db) (keyword new_option))
+          (do
+            (swap! add_option_state merge {:error (str "This item already exists")}))
 
         :else
         (do
-          (js/console.log "actual new option branch")
-          (swap! add_option_state merge {:form_value ""
-                                         :error      false})
-          (swap! option_state assoc new_option (random-uuid))
-          (set! (.-value (js/document.getElementById "input-addOption")) "")
-          )))))
+          (reset! add_option_state { :form_value ""
+                                     :error      false})
+          (swap! app_db assoc-in
+                 [:options (keyword new_option)] (random-uuid)))))))
 
 
 
-(defn add-option [option_state]
+
+(defn add-option [app_db]
   (let [add_option_state (r/atom {
                                   :error false
                                   :form_value ""
                                   })]
-    (fn [option_state]
+    (fn [app_db]
       (let [error (:error @add_option_state)]
-        (do (tap> @add_option_state)
+        (do
             [:div
              (if error
                [:p {:id "error-msg-addOption"} error])
-             (tap> @add_option_state)
              [:form {:id "form-addOption"
                      :on-submit
                          (fn [e]
                            (handle_add_option {:event            e
                                                :add_option_state add_option_state
-                                               :option_state     option_state}))}
-              [:input {:id           "input-addOption"
-                       :placeholder  "Enter option text here"
-                       :name         :add_option_text
+                                               :app_db     app_db}))}
+              [:input {:id          "input-addOption"
+                       :placeholder "Enter option text here"
+                       :name        :add_option_text
                        :on-change
-                                     (fn [e]
-                                       (swap! add_option_state assoc
-                                              :form_value e.target.value))
-                       :defaultValue (:form_value @add_option_state)
+                                    (fn [e]
+                                      (swap! add_option_state assoc
+                                             :form_value e.target.value))
+                       :value       (:form_value @add_option_state)
                        }]
               [:button {:type :submit
                         :id   "button-addOption"}
                "Add Option"]]])))))
 
 
-#_(def test_map
-  (into {} (map (fn [x] [x (random-uuid)]) ["Thing One" "Thing Two" "Thing Three"])))
+#_(defn option-modal [{:keys [selectedOption handle_close_option_modal]}]
+  [:> modal
+   {:isOpen selectedOption
+    :contentLabel "Selected Option"
+    :id "option-modal"
+    :onRequestClose handle_close_option_modal}
+
+   [:h3 "Selected Option"]
+   (if selectedOption
+     [:p {:id picked-option} selectedOption])
+   [:button {:id "closeModal"
+             :on-click handle_close_option_modal}]
+
+   ])
+
+#_(fn [e] (js/console.log "onRequestClose called"))
 
 
 (defn indecision-app
@@ -131,14 +142,18 @@
    (let [option_map (into {}
                           (map (fn [x] [x (random-uuid)])
                                option_seq))
-         option_state (r/atom option_map)]
+         option_state (r/atom option_map)
+         app_db (r/atom {:options option_map
+                         :selectedOption NONE})]
      (fn []
        [:div
         [header {:subtitle
                  "Put your life in the hands of a computer"}]
-        [action option_state]
-        [options option_state]
-        [add-option option_state]]))))
+        [action app_db]
+        [options app_db]
+        [add-option app_db]
+        #_[option-modal {}]
+        ]))))
 
 
 (defn ^:export ^:dev/after-load run []
