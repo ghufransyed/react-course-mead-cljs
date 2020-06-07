@@ -1,7 +1,9 @@
 (ns com.ghufran.core
   (:require [reagent.core :as r]
             [reagent.dom :as rdom]
-            ["react-modal" :default modal]))
+            ["react-modal" :as modal]
+            [com.ghufran.utils :as u]))
+
 
 
 (defn header
@@ -15,28 +17,28 @@
 
 (defn pick_option [app_db]
   (let [picked_option (rand-nth (keys (:options @app_db)))]
-    (js/console.log picked_option)))
+    (swap! app_db assoc-in [:selectedOption] picked_option)))
 
 
 (defn action [app_db]
-      [:div
-       [:button
-        {:on-click #(pick_option app_db)
-         :disabled (empty? (:options @app_db))
-         :id       "what-do"}
-        "What should I do?"]])
+  [:div
+   [:button
+    {:on-click #(pick_option app_db)
+     :disabled (empty? (:options @app_db))
+     :id       "what-do"}
+    "What should I do?"]])
 
 
-(defn option [{:keys [option_text option_state id]}]
+
+(defn option [{:keys [option_text app_db id]}]
   [:div {:id (str "option-" id)
          :class "option" }
-   [:span
-    option_text
+   [:span option_text
     [:button {
-              :id (str "btn-" id)
+              :id    (str "btn-" id)
               :class "option-remove-btn"
               :on-click
-              #(swap! option_state dissoc option_text)}
+                     #(swap! app_db (fn [m] update-in m [:options] dissoc option_text))}
      "Remove"]]])
 
 
@@ -53,15 +55,20 @@
         "Remove All"]
        (for [[val uuid id] (map conj (:options @app_db) (range))
              :let [key (str uuid)]]
-        ^{:key key}
-          [option {:id id
-                   :option_text val
-                   :option_state app_db}])
+         (do
+           (js/console.log [val key id])
+           ^{:key key}
+           [option {:id          id
+                    :option_text val
+                    :app_db      app_db}]))
 
        (if (= (count (:options @app_db)) 0)
          [:p {:id "get-started-msg"}
           "Please add an option to get started!"])
        ])
+
+
+
 
 
 (defn handle_add_option [{:keys [event app_db add_option_state]}]
@@ -72,7 +79,7 @@
         (= new_option "")
         (do
           (swap! add_option_state merge {:error "Sorry, that is not a valid entry"}))
-        (contains? (:options @app_db) (keyword new_option))
+        (contains? (:options @app_db) new_option)
           (do
             (swap! add_option_state merge {:error (str "This item already exists")}))
 
@@ -81,16 +88,20 @@
           (reset! add_option_state { :form_value ""
                                      :error      false})
           (swap! app_db assoc-in
-                 [:options (keyword new_option)] (random-uuid)))))))
+                 [:options new_option] (str (random-uuid)))
+          (u/set-item! "app_db" @app_db))))))
+
+
+
+
+
 
 
 
 
 (defn add-option [app_db]
-  (let [add_option_state (r/atom {
-                                  :error false
-                                  :form_value ""
-                                  })]
+  (let [add_option_state (r/atom {:error false
+                                  :form_value ""})]
     (fn [app_db]
       (let [error (:error @add_option_state)]
         (do
@@ -117,46 +128,63 @@
                "Add Option"]]])))))
 
 
-#_(defn option-modal [{:keys [selectedOption handle_close_option_modal]}]
-  [:> modal
-   {:isOpen selectedOption
-    :contentLabel "Selected Option"
-    :id "option-modal"
-    :onRequestClose handle_close_option_modal}
+(defn option-modal [app_db]
+  (let [selectedOption (:selectedOption @app_db)]
+    [:> modal
+     {:isOpen         (boolean selectedOption)
+      :contentLabel   "Selected Option"
+      :id             "option-modal"
+      :onRequestClose (fn [e]
+                        (swap! app_db assoc-in [:selectedOption] false))
+      :ariaHideApp    false }
 
-   [:h3 "Selected Option"]
-   (if selectedOption
-     [:p {:id picked-option} selectedOption])
-   [:button {:id "closeModal"
-             :on-click handle_close_option_modal}]
-
-   ])
-
-#_(fn [e] (js/console.log "onRequestClose called"))
+     [:h3 "Selected Option"]
+     (if selectedOption
+       [:p {:id selectedOption} selectedOption])
+     [:button {:id       "closeModal"
+               :on-click (fn [e]
+                           (swap! app_db assoc-in [:selectedOption] false))}"Okay"]
+     ]))
 
 
-(defn indecision-app
-  ([]
-   (indecision-app {}))
-  ([option_seq]
-   (let [option_map (into {}
-                          (map (fn [x] [x (random-uuid)])
-                               option_seq))
-         option_state (r/atom option_map)
-         app_db (r/atom {:options option_map
-                         :selectedOption NONE})]
-     (fn []
-       [:div
-        [header {:subtitle
-                 "Put your life in the hands of a computer"}]
-        [action app_db]
-        [options app_db]
-        [add-option app_db]
-        #_[option-modal {}]
-        ]))))
+(defn indecision-app []
+  (let [app_db (r/atom  {:options {} :selectedOption false})]
+    (r/create-class
+      {:display-name "indecision-app"
+
+       :component-did-mount
+                     (fn [this]
+                       (do
+                         (println "component-did-mount")
+                         (tap> @app_db)
+                         (let [ls (u/get-item "app_db")]
+                           (if ls
+                             (reset! app_db ls)))
+                         (tap> @app_db)
+                         ))
+
+       :reagent-render
+                     (fn []
+                       [:div
+                        [header {:subtitle
+                                 "Put your life in the hands of a computer"}]
+                        [action app_db]
+                        [options app_db]
+                        [add-option app_db]
+                        [option-modal app_db]
+                        ])})))
 
 
 (defn ^:export ^:dev/after-load run []
-  (rdom/render [indecision-app] (js/document.getElementById "app"))
-  (js/console.log "'run' called"))
+  (rdom/render [indecision-app]
+               (js/document.getElementById "app")))
+
+
+#_(u/set-item! 'app_db' {:options {:one "1" :two "2"} :selectedOption false})
+
+
+(u/get-item "app_db")
+(boolean (u/get-item "app_db"))
+(boolean (u/get-item "foo"))
+
 
